@@ -53,43 +53,25 @@ This project is a **Python-based Tech News Summarization App** that delivers per
 
 ## **Setup Instructions**
 
-### 1. Clone the Repository
-
+1. Clone the repository
+2. Install dependencies:
 ```bash
-git clone https://github.com/your-repo-url/tech-news-briefing-app.git
-cd tech-news-briefing-app
+poetry install
 ```
 
-### 2. Create a Virtual Environment
-
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-### 3. Install Dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-### 4. Configure API Keys
-
-Create a `.env` file in the project root directory with the following keys:
-
+3. Set up environment variables in `.env`:
 ```env
 NEWS_API_KEY=your_news_api_key
 OPENAI_API_KEY=your_openai_api_key
-TTS_API_KEY=your_tts_api_key
+GOOGLE_APPLICATION_CREDENTIALS=path/to/your/credentials.json
 ```
 
-### 5. Run the Application
-
+4. Run the application:
 ```bash
-uvicorn main:app --reload
+poetry run uvicorn main:app --reload
 ```
 
-The app will be available at `http://127.0.0.1:8000`.
+Visit `http://localhost:8000` to use the application.
 
 ---
 
