@@ -1,9 +1,8 @@
 # Tech News Briefing
 
-<div align="center">
-  <img src="assets/app_screenshot1.png" width="48%" alt="Tech News Initial View" />
-  <img src="assets/app_screenshot2.PNG" width="48%" alt="Tech News with Summary" style="margin-left: 2%;" />
-</div>
+| Initial View | With Summary |
+|:---:|:---:|
+| ![Tech News Initial View](assets/app_screenshot1.png) | ![Tech News with Summary](assets/app_screenshot2.PNG) |
 
 A FastAPI application that fetches tech news articles, creates a summary using OpenAI's GPT-3.5, and converts it to speech using Google Cloud Text-to-Speech.
 
