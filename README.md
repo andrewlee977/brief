@@ -1,3 +1,16 @@
+# Tech News Briefing
+
+![Tech News Briefing App](assets/images/app_screenshot.png)
+
+A FastAPI application that fetches tech news articles, creates a summary using OpenAI's GPT-3.5, and converts it to speech using Google Cloud Text-to-Speech.
+
+## Features
+- Fetches latest tech news articles
+- Generates concise summaries using GPT-3.5
+- Converts summaries to natural-sounding speech
+- Interactive audio player with progress tracking
+- Configurable summary lengths (5, 10, or 15 articles)
+
 # Personalized Tech News Briefing App
 
 This project is a **Python-based Tech News Summarization App** that delivers personalized tech news briefings. It integrates tech news aggregation, AI-powered text summarization, and text-to-speech (TTS) features to provide users with brief, conversational summaries of recent tech news articles.
