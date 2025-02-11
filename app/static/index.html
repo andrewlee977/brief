@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tech News Briefing</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            text-align: center;
+            margin-top: 50px;
+        }
+        .summary-options {
+            margin-bottom: 20px;
+        }
+        .summary-option {
+            margin: 0 10px;
+            cursor: pointer;
+        }
+        .selected {
+            font-weight: bold;
+            color: #007bff;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #results {
+            margin-top: 20px;
+            text-align: left;
+        }
+        .article {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .audio-container {
+            margin-top: 20px;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #ddd;
+            border-radius: 2px;
+            cursor: pointer;
+        }
+        
+        .progress {
+            width: 0%;
+            height: 100%;
+            background: #007bff;
+            border-radius: 2px;
+            transition: width 0.1s linear;
+        }
+        
+        .time-display {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .audio-controls {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .play-button {
+            background: #007bff;
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+        }
+        
+        .play-button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="summary-options">
+            <label class="summary-option selected" data-length="short">
+                <input type="radio" name="summary-length" value="short" checked> Short (5 articles)
+            </label>
+            <label class="summary-option" data-length="medium">
+                <input type="radio" name="summary-length" value="medium"> Medium (10)
+            </label>
+            <label class="summary-option" data-length="long">
+                <input type="radio" name="summary-length" value="long"> Long (15)
+            </label>
+        </div>
+        <button id="fetchNews">Fetch Tech News</button>
+        <div id="results">
+            <div id="summary"></div>
+            <div class="audio-container" style="display: none;" id="audio-wrapper">
+                <audio id="audio-player" style="display: none;"></audio>
+                <div class="audio-controls">
+                    <button class="play-button" id="play-pause">
+                        ▶
+                    </button>
+                </div>
+                <div class="progress-bar" id="progress-bar">
+                    <div class="progress" id="progress"></div>
+                </div>
+                <div class="time-display">
+                    <span id="current-time">0:00</span>
+                    <span id="duration">0:00</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const audioPlayer = document.getElementById('audio-player');
+        const playPauseButton = document.getElementById('play-pause');
+        const progressBar = document.getElementById('progress-bar');
+        const progress = document.getElementById('progress');
+        const currentTime = document.getElementById('current-time');
+        const duration = document.getElementById('duration');
+        
+        // Set up audio event listeners once
+        playPauseButton.addEventListener('click', () => {
+            if (audioPlayer.paused) {
+                audioPlayer.play();
+                playPauseButton.textContent = '⏸';
+            } else {
+                audioPlayer.pause();
+                playPauseButton.textContent = '▶';
+            }
+        });
+        
+        audioPlayer.addEventListener('timeupdate', () => {
+            const percent = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+            progress.style.width = percent + '%';
+            currentTime.textContent = formatTime(audioPlayer.currentTime);
+            playPauseButton.textContent = audioPlayer.paused ? '▶' : '⏸';
+        });
+        
+        progressBar.addEventListener('click', (e) => {
+            const rect = progressBar.getBoundingClientRect();
+            const pos = (e.clientX - rect.left) / progressBar.offsetWidth;
+            audioPlayer.currentTime = pos * audioPlayer.duration;
+        });
+        
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            seconds = Math.floor(seconds % 60);
+            return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        document.getElementById('fetchNews').addEventListener('click', async () => {
+            const selectedLength = document.querySelector('input[name="summary-length"]:checked').value;
+            const resultsDiv = document.getElementById('results');
+            const summaryDiv = document.getElementById('summary');
+            const audioWrapper = document.getElementById('audio-wrapper');
+            
+            summaryDiv.innerHTML = 'Loading...';
+            audioWrapper.style.display = 'none';
+            audioPlayer.pause();  // Stop any playing audio
+
+            try {
+                // Get the correct number of articles based on summary length
+                const articleCounts = {
+                    "short": 5,
+                    "medium": 10,
+                    "long": 15
+                };
+                const articleCount = articleCounts[selectedLength];
+                const response = await fetch(`/api/v1/briefing/?max_articles=${articleCount}&summary_length=${selectedLength}`);
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    try {
+                        const errorJson = JSON.parse(errorText);
+                        throw new Error(errorJson.detail || 'Failed to fetch news');
+                    } catch (e) {
+                        throw new Error(`Server error: ${errorText}`);
+                    }
+                }
+                const data = await response.json();
+                
+                summaryDiv.innerHTML = `<p>${data.summary}</p>`;
+                
+                // Set up new audio
+                const audioBlob = new Blob([new Uint8Array(data.audio_content.data)], { type: 'audio/mp3' });
+                const audioUrl = URL.createObjectURL(audioBlob);
+                audioPlayer.src = audioUrl;
+                audioWrapper.style.display = 'block';
+                
+                // Reset UI
+                progress.style.width = '0%';
+                currentTime.textContent = '0:00';
+                playPauseButton.textContent = '▶';
+                
+                // Wait for metadata before showing duration
+                audioPlayer.addEventListener('loadedmetadata', () => {
+                    duration.textContent = formatTime(audioPlayer.duration);
+                    URL.revokeObjectURL(audioUrl);  // Clean up the URL after loading
+                }, { once: true });
+                
+            } catch (error) {
+                summaryDiv.innerHTML = `
+                    <div class="error">
+                        <h3>Error</h3>
+                        <p>${error.message}</p>
+                        <p>Please try again later or contact support if the problem persists.</p>
+                    </div>`;
+                console.error(error);
+            }
+        });
+
+        document.querySelectorAll('.summary-option').forEach(option => {
+            option.addEventListener('click', () => {
+                document.querySelectorAll('.summary-option').forEach(opt => opt.classList.remove('selected'));
+                option.classList.add('selected');
+            });
+        });
+    </script>
+</body>
+</html> 
