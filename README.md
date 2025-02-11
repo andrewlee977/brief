@@ -1,6 +1,6 @@
 # Tech News Briefing
 
-![Tech News Briefing App](assets/images/app_screenshot.png)
+![Tech News Briefing App](assets/app_screenshot.png)
 
 A FastAPI application that fetches tech news articles, creates a summary using OpenAI's GPT-3.5, and converts it to speech using Google Cloud Text-to-Speech.
 
