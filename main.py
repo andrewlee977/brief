@@ -10,8 +10,11 @@ app = FastAPI(
     version="0.1.0"
 )
 
-app.include_router(router)
+# Mount static files
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
+app.mount("/assets", StaticFiles(directory="assets"), name="assets")
+
+app.include_router(router)
 
 @app.get("/")
 async def root():

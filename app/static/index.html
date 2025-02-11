@@ -6,42 +6,110 @@
     <title>Tech News Briefing</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
+            font-family: 'Times New Roman', serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;  /* Fallback color */
+            background: url('/assets/old-aged-newspaper-texture.png') center center fixed;
+            background-size: cover;
+            min-height: 100vh;
         }
+        
         .container {
             text-align: center;
-            margin-top: 50px;
+            padding: 40px 20px;
+            background: rgba(255, 255, 255, 0.25);  /* 50% more transparent */
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            max-width: 800px;
+            margin: 40px auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
+        
+        .headline {
+            font-size: 3em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #000000;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+        
+        .subheadline {
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
         .summary-options {
-            margin-bottom: 20px;
+            margin-bottom: 30px;
         }
+        
         .summary-option {
             margin: 0 10px;
             cursor: pointer;
+            padding: 8px 16px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
         }
+        
         .selected {
-            font-weight: bold;
             color: #007bff;
+            background: rgba(0, 123, 255, 0.1);
         }
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
+        
+        #fetchNews {
+            padding: 12px 30px;
+            font-size: 1.2em;
             background-color: #007bff;
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 25px;
             cursor: pointer;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
-        button:hover {
+        
+        #fetchNews:hover {
             background-color: #0056b3;
         }
+        
         #results {
-            margin-top: 20px;
+            margin-top: 30px;
             text-align: left;
+            padding: 20px;
         }
+        
+        #summary {
+            background: rgba(255, 255, 255, 0.15);  /* Make it more transparent */
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            margin-bottom: 20px;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            font-family: 'Times New Roman', serif;  /* Match container font */
+        }
+        
+        #summary p {
+            margin: 0;
+            line-height: 1.6;
+            color: #333;  /* Softer text color */
+            font-size: 1.1em;
+            font-family: inherit;
+        }
+        
+        .loading {
+            margin-top: 20px;
+            font-style: italic;
+            color: #666;
+            background: transparent;  /* Remove white background */
+        }
+        
         .article {
             margin-bottom: 20px;
             padding: 15px;
@@ -49,6 +117,12 @@
             border-radius: 5px;
         }
         .audio-container {
+            background: rgba(255, 255, 255, 0.15);  /* Match summary transparency */
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 20px;
             margin-top: 20px;
             width: 100%;
             max-width: 600px;
@@ -103,10 +177,21 @@
         .play-button:hover {
             background: #0056b3;
         }
+
+        .error {
+            background: transparent;  /* Remove white background */
+            color: #dc3545;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(220, 53, 69, 0.2);
+        }
     </style>
 </head>
 <body>
     <div class="container">
+        <h1 class="headline">Daily Tech Digest</h1>
+        <p class="subheadline">Your curated briefing of today's most important tech stories</p>
+        
         <div class="summary-options">
             <label class="summary-option selected" data-length="short">
                 <input type="radio" name="summary-length" value="short" checked> Short (5 articles)
@@ -118,7 +203,11 @@
                 <input type="radio" name="summary-length" value="long"> Long (15)
             </label>
         </div>
+        
         <button id="fetchNews">Fetch Tech News</button>
+        
+        <div id="loading" class="loading" style="display: none;">Loading...</div>
+        
         <div id="results">
             <div id="summary"></div>
             <div class="audio-container" style="display: none;" id="audio-wrapper">
@@ -182,9 +271,13 @@
             const resultsDiv = document.getElementById('results');
             const summaryDiv = document.getElementById('summary');
             const audioWrapper = document.getElementById('audio-wrapper');
+            const loadingDiv = document.getElementById('loading');
             
-            summaryDiv.innerHTML = 'Loading...';
+            loadingDiv.style.display = 'block';
             audioWrapper.style.display = 'none';
+            summaryDiv.style.opacity = '0';
+            summaryDiv.style.display = 'none';
+            summaryDiv.innerHTML = '';
             audioPlayer.pause();  // Stop any playing audio
 
             try {
@@ -207,6 +300,9 @@
                 }
                 const data = await response.json();
                 
+                loadingDiv.style.display = 'none';
+                summaryDiv.style.display = 'block';
+                summaryDiv.style.opacity = '1';
                 summaryDiv.innerHTML = `<p>${data.summary}</p>`;
                 
                 // Set up new audio
@@ -227,6 +323,9 @@
                 }, { once: true });
                 
             } catch (error) {
+                loadingDiv.style.display = 'none';
+                summaryDiv.style.display = 'block';
+                summaryDiv.style.opacity = '1';
                 summaryDiv.innerHTML = `
                     <div class="error">
                         <h3>Error</h3>
